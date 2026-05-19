@@ -6,11 +6,14 @@ from src.errors.exceptions import SemanticError, RuntimeError, ReturnException, 
 class InterpreterVisitor:
     def __init__(self, env=None):
         self.env = env or Environment()
+
+        self.env.define_var('pi', math.pi)
+        self.env.define_var('e', math.e)
+
         self.builtins = {
             'sin': math.sin, 'cos': math.cos, 'tan': math.tan,
             'sqrt': math.sqrt, 'log': math.log, 'exp': math.exp,
-            'det': np.linalg.det, 'inv': np.linalg.inv,
-            'pi': math.pi, 'e': math.e
+            'det': np.linalg.det, 'inv': np.linalg.inv
         }
 
     def visit(self, node):

@@ -53,8 +53,10 @@ class ASTBuilder(MiniCalcLangVisitor):
         return self.visit(ctx.expr())
 
     def visitMatrixExpr(self, ctx: MiniCalcLangParser.MatrixExprContext):
+        matrix_ctx = ctx.matrix_expr()
+
         rows = []
-        for row_ctx in ctx.matrix_row():
+        for row_ctx in matrix_ctx.matrix_row():
             row = [self.visit(expr) for expr in row_ctx.expr()]
             rows.append(row)
         return MatrixNode(rows)
