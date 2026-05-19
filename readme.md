@@ -80,7 +80,7 @@ Poniższa tabela przedstawia zestawienie wszystkich tokenów używanych przez an
 Poniżej znajduje się pełna formalna gramatyka języka (bez akcji semantycznych), definiująca reguły produkcyjne parsera. Warto zauważyć, że priorytety operatorów są zdefiniowane przez kolejność reguł w produkcie `expr`.
 
 ```antlr
-grammar MiniCalcLang;
+rammar MiniCalcLang;
 
 program: statement* EOF;
 
@@ -92,6 +92,8 @@ statement:
     | while_stmt
     | for_stmt
     | return_stmt
+    | break_stmt
+    | continue_stmt 
     | expr_stmt
     ;
 
@@ -104,25 +106,37 @@ if_stmt: 'if' expr block ('else' block)?;
 while_stmt: 'while' expr block;
 for_stmt: 'for' ID '=' expr 'to' expr ('step' expr)? block;
 return_stmt: 'return' expr?;
+break_stmt: 'break';
+continue_stmt: 'continue';
 expr_stmt: expr;
 
 expr:
-      matrix_expr                                   
+      matrix_expr                                       
     | '(' expr ')'                                  
-    | ID '(' (expr (',' expr)*)? ')'                
-    | ID                                            
-    | NUMBER                                        
-    | STRING                                        
-    | 'true' | 'false'                                  
-    | expr '\''                                     
-    | ('-' | 'not') expr                            
-    | expr '^' expr                                 
-    | expr ('*' | '/' | '%') expr                   
-    | expr ('+' | '-') expr                         
+    | ID '(' (expr (',' expr)*)? ')'                   
+    | ID                                           
+    | NUMBER                                           
+    | STRING                                            
+    | (TRUE | FALSE)                               
+    | expr '\''                                   
+    | ('+' | '-' | 'not') expr                      
+    | expr '^' expr                        
+    | expr ('*' | '/' | '%') expr                  
+    | expr ('+' | '-') expr                             
     | expr ('>' | '<' | '>=' | '<=' | '==' | '!=') expr 
-    | expr 'and' expr                               
-    | expr 'or' expr                                
+    | expr 'and' expr                                  
+    | expr 'or' expr                                   
     ;
 
 matrix_expr: '[' matrix_row (',' matrix_row)* ']';
 matrix_row: '[' expr (',' expr)* ']';
+
+TRUE: 'true';
+FALSE: 'false';
+
+ID: [a-zA-Z_][a-zA-Z0-9_]*;
+NUMBER: [0-9]+ ('.' [0-9]+)?;
+STRING: '"' ~["]* '"';
+
+WS: [ \t\r\n]+;
+COMMENT: '#' ~[\r\n]*;
