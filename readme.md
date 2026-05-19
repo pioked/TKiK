@@ -1,91 +1,128 @@
-# Projekt: MiniCalcLang - Interpreter Języka Obliczeń Naukowych
+# Sprawozdanie z projektu: Teoria Kompilacji i Kompilatorów (TKiK)
 
-**Przedmiot:** Teoria Kompilacji i Kompilatorów (TKiK)
+## 1. Temat projektu
+**MiniCalcLang** – interpreter języka programowania przeznaczonego do obliczeń naukowych, algebry liniowej (macierzy) oraz instrukcji sterujących przepływem.
 
-**Autor:** Piotr Kędziora
+## 2. Dane studenta
+* **Imię i nazwisko:** Piotr Kędziora
+* **E-mail:** pkedziora@student.agh.edu.pl
 
-**E-mail:** pkedziora@student.agh.edu.pl
+## 3. Założenia programu
 
-## 1. Temat Projektu
-MiniCalcLang to autorski, interpretowany język programowania przeznaczony do obliczeń matematycznych, operacji na macierzach i przeprowadzania prostych symulacji naukowych. 
+### Ogólne cele programu
+Celem projektu jest stworzenie języka ułatwiającego przeprowadzanie obliczeń matematycznych i macierzowych. Język umożliwia definiowanie zmiennych, tworzenie własnych funkcji, kontrolowanie przepływu programu (pętle `while`, `for`, instrukcje `if/else`) oraz natywną obsługę operacji na macierzach (mnożenie, transpozycja). 
 
-## 2. Cele programu
-Stworzenie w pełni funkcjonalnego interpretera demonstrującego proces kompilacji w locie. Projekt ma edukacyjnie obrazować fazy analizy leksykalnej, parsowania kodu, generacji Drzewa Składni Abstrakcyjnej (AST) oraz wizytowania go w środowisku uruchomieniowym z obsługą pamięci lokalnej (Scope).
+### Rodzaj translatora
+**Interpreter** oparty o Drzewo Składni Abstrakcyjnej (AST). Program nie kompiluje kodu źródłowego do kodu maszynowego ani bajtkodu. Zamiast tego buduje wewnętrzną reprezentację (AST) i wykonuje ją węzeł po węźle z wykorzystaniem wzorca projektowego *Visitor* oraz własnego środowiska pamięci (*Scope/Environment*).
 
-## 3. Rodzaj translatora
-Bezpośredni interpreter oparty na Drzewie Składni Abstrakcyjnej (AST-walking interpreter). Nie generuje kodu maszynowego ani bajtkodu (nie jest kompilatorem).
+### Planowany wynik działania programu
+Program wczytuje kod źródłowy z pliku tekstowego (`.mcl`), analizuje go, rozwiązuje wyrażenia matematyczne i logiczne, a na podstawie instrukcji `print` wyświetla przetworzone wyniki na standardowym wyjściu (np. wynik mnożenia macierzy w formacie tekstowym). W przypadku błędów składniowych lub semantycznych zgłasza precyzyjne wyjątki wraz z numerem linii.
 
-## 4. Planowany wynik działania
-Wynikiem działania programu są obliczenia i komunikaty zlecane w instrukcjach języka (np. polecenie `print`), wyświetlane na standardowym wyjściu (stdout). Program informuje o błędach składniowych oraz semantycznych (np. nieistniejąca zmienna, niezgodne wymiary macierzy).
+### Planowany język implementacji
+* **Język:** Python 3.12+
 
-## 5. Opis języka
-MiniCalcLang to język o składni zbliżonej do Pythona/C, silnie typowany dynamicznie. Zapewnia natywną składnię dla typów liczbowych i macierzy. Obsługuje instrukcje warunkowe, pętle oraz zestaw standardowych funkcji naukowych.
+### Sposób realizacji skanera i parsera
+Skaner (lexer) oraz parser zostały wygenerowane automatycznie przy użyciu generatora **ANTLR4** z docelowym językiem generacji (target) ustawionym na Pythona. Następnie, wygenerowane drzewo składniowe (Parse Tree) jest mapowane na autorskie klasy AST, oddzielając gramatykę od logiki wykonawczej interpretera.
 
-## 6. Opis interpretera
-Interpreter bazuje na wzorcu konstrukcyjnym Visitor. Kod po przekształceniu w AST jest obiegany węzeł po węźle, gdzie każda operacja jest realizowana przy użyciu wbudowanego w Python silnika obliczeniowego oraz biblioteki `numpy`. Interpreter posiada własną instancję wirtualnego środowiska (`Environment`), przechowującą zadeklarowane zmienne.
+---
 
-## 7. Język implementacji
-* Python 3.12
-* Zalecane utworzenie wirtualnego środowiska (venv).
+## 4. Opis tokenów
 
-## 8. Opis parsera i skanera
-* **Generator:** ANTLR4
-* Skaner dzieli strumień wejściowy na tokeny ignorując białe znaki i komentarze.
-* Parser buduje drzewo błędu (CST - Concrete Syntax Tree), które za pomocą wzorca Visitor mapowane jest do dedykowanego w Pythonie AST (Abstract Syntax Tree). 
+Poniższa tabela przedstawia zestawienie wszystkich tokenów używanych przez analizator leksykalny w języku MiniCalcLang.
 
-## 9. Opis tokenów
-Główne tokeny (terminale) użyte w systemie to:
-* `ID`: Zmienne i nazwy funkcji, ciągi znaków alfanumerycznych, zaczynające się od litery.
-* `NUMBER`: Liczby całkowite i zmiennoprzecinkowe (np. `42`, `3.14`).
-* `WS`, `COMMENT`: Ignorowane znaki sterujące i komentarze jednolinijkowe zaczynające się od `#`.
-* Słowa kluczowe: `if`, `while`, `print`.
+| Kategoria | Nazwa Tokenu | Wyrażenie regularne / Tekst | Opis |
+| :--- | :--- | :--- | :--- |
+| **Słowa kluczowe** | `DEF` | `'def'` | Deklaracja funkcji |
+| | `RETURN` | `'return'` | Zwracanie wartości z funkcji |
+| | `IF` | `'if'` | Instrukcja warunkowa |
+| | `ELSE` | `'else'` | Alternatywa instrukcji warunkowej |
+| | `WHILE` | `'while'` | Pętla warunkowa |
+| | `FOR` | `'for'` | Pętla iteracyjna |
+| | `TO` | `'to'` | Słowo kluczowe pętli for (zakres) |
+| | `STEP` | `'step'` | Opcjonalny krok w pętli for |
+| | `PRINT` | `'print'` | Instrukcja wypisania na ekran |
+| **Stałe logiczne** | `TRUE` | `'true'` | Wartość logiczna Prawda |
+| | `FALSE` | `'false'` | Wartość logiczna Fałsz |
+| **Operatory logiczne** | `AND` | `'and'` | Koniunkcja logiczna |
+| | `OR` | `'or'` | Alternatywa logiczna |
+| | `NOT` | `'not'` | Negacja logiczna |
+| **Operatory arytmet.**| `PLUS` | `'+'` | Dodawanie |
+| | `MINUS` | `'-'` | Odejmowanie / Negacja unarna |
+| | `MUL` | `'*'` | Mnożenie |
+| | `DIV` | `'/'` | Dzielenie |
+| | `MOD` | `'%'` | Reszta z dzielenia (Modulo) |
+| | `POW` | `'^'` | Potęgowanie |
+| | `TRANSPOSE` | `'''` (apostrof) | Transpozycja macierzy |
+| **Operatory relacyjne**| `GT` | `'>'` | Większe niż |
+| | `LT` | `'<'` | Mniejsze niż |
+| | `GTE` | `'>='` | Większe lub równe |
+| | `LTE` | `'<='` | Mniejsze lub równe |
+| | `EQ` | `'=='` | Równe |
+| | `NEQ` | `'!='` | Różne |
+| **Znaki strukturalne** | `ASSIGN` | `'='` | Przypisanie |
+| | `LPAREN` | `'('` | Otwarcie nawiasu okrągłego |
+| | `RPAREN` | `')'` | Zamknięcie nawiasu okrągłego |
+| | `LBRACE` | `'{'` | Otwarcie bloku kodu |
+| | `RBRACE` | `'}'` | Zamknięcie bloku kodu |
+| | `LBRACKET` | `'['` | Otwarcie nawiasu kwadratowego |
+| | `RBRACKET` | `']'` | Zamknięcie nawiasu kwadratowego |
+| | `COMMA` | `','` | Przecinek / separator |
+| **Typy danych** | `ID` | `[a-zA-Z_][a-zA-Z0-9_]*` | Identyfikator (zmienna/funkcja) |
+| | `NUMBER` | `[0-9]+ ('.' [0-9]+)?` | Liczba całkowita / zmiennoprzecinkowa |
+| | `STRING` | `'"' ~["]* '"'` | Ciąg znaków (napis) |
+| **Białe znaki** | `WS` | `[ \t\r\n]+` | Ignorowane znaki (-> skip) |
+| | `COMMENT` | `'#' ~[\r\n]*` | Komentarze jednolinijkowe (-> skip) |
 
-## 10. Formalna Gramatyka (BNF)
-```bnf
-<program> ::= <statement>* EOF
-<statement> ::= <assignment> | <print_stmt> | <if_stmt> | <while_stmt> | <expr_stmt>
-<assignment> ::= ID "=" <expr>
-<print_stmt> ::= "print" "(" <expr> ")"
-<if_stmt> ::= "if" <expr> "{" <statement>* "}"
-<while_stmt> ::= "while" <expr> "{" <statement>* "}"
-<expr_stmt> ::= <expr>
+---
 
-<expr> ::= <matrix_expr>
-         | "(" <expr> ")"
-         | ID "(" [<expr> ("," <expr>)*] ")"
-         | ID
-         | NUMBER
-         | "-" <expr>
-         | <expr> "^" <expr>
-         | <expr> ("*" | "/" | "%") <expr>
-         | <expr> ("+" | "-") <expr>
-         | <expr> (">" | "<" | ">=" | "<=" | "==" | "!=") <expr>
+## 5. Gramatyka formatu (Notacja ANTLR4)
 
-<matrix_expr> ::= "[" <matrix_row> ("," <matrix_row>)* "]"
-<matrix_row> ::= "[" <expr> ("," <expr>)* "]"
-```
-## 11. Informacje o bibliotekach
-* `antlr4-python3-runtime`: Runtime dla wygenerowanego kodu parsera.
-* `numpy`: Realizacja wysoce wydajnych operacji na macierzach.
-* `pytest`: Biblioteka testów jednostkowych.
-* `math`: Wbudowane wsparcie operacji na liczbach.
+Poniżej znajduje się pełna formalna gramatyka języka (bez akcji semantycznych), definiująca reguły produkcyjne parsera. Warto zauważyć, że priorytety operatorów są zdefiniowane przez kolejność reguł w produkcie `expr`.
 
-## 12. Instrukcja uruchomienia
-1. Instalacja zależności: `pip install -r requirements.txt`
-2. Generacja parsera: `cd grammar && ./generate.sh`
-3. Uruchomienie skryptu: `python src/main.py examples/01_math.mcl`
+```antlr
+grammar MiniCalcLang;
 
-## 13. Przykłady użycia
-```python
-# Inicjalizacja macierzy i operacje
-A = [[1, 2], [3, 4]]
-B = [[2, 0], [1, 2]]
-C = A * B
-print(C)
+program: statement* EOF;
 
-# Użycie funkcji i pętli
-x = 0
-while x < 5 {
-    print(sin(x))
-    x = x + 1
-}
+statement:
+      def_stmt
+    | assignment
+    | print_stmt
+    | if_stmt
+    | while_stmt
+    | for_stmt
+    | return_stmt
+    | expr_stmt
+    ;
+
+block: '{' statement* '}';
+
+def_stmt: 'def' ID '(' (ID (',' ID)*)? ')' block;
+assignment: ID '=' expr;
+print_stmt: 'print' '(' expr ')';
+if_stmt: 'if' expr block ('else' block)?;
+while_stmt: 'while' expr block;
+for_stmt: 'for' ID '=' expr 'to' expr ('step' expr)? block;
+return_stmt: 'return' expr?;
+expr_stmt: expr;
+
+expr:
+      matrix_expr                                   
+    | '(' expr ')'                                  
+    | ID '(' (expr (',' expr)*)? ')'                
+    | ID                                            
+    | NUMBER                                        
+    | STRING                                        
+    | 'true' | 'false'                                  
+    | expr '\''                                     
+    | ('-' | 'not') expr                            
+    | expr '^' expr                                 
+    | expr ('*' | '/' | '%') expr                   
+    | expr ('+' | '-') expr                         
+    | expr ('>' | '<' | '>=' | '<=' | '==' | '!=') expr 
+    | expr 'and' expr                               
+    | expr 'or' expr                                
+    ;
+
+matrix_expr: '[' matrix_row (',' matrix_row)* ']';
+matrix_row: '[' expr (',' expr)* ']';

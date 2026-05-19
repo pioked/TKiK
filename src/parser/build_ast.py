@@ -74,7 +74,6 @@ class ASTBuilder(MiniCalcLangVisitor):
         return NumberNode(float(ctx.NUMBER().getText()))
 
     def visitStringExpr(self, ctx: MiniCalcLangParser.StringExprContext):
-        # Usuwamy cudzysłowy z wartości stringa
         val = ctx.STRING().getText()[1:-1]
         return StringNode(val)
 
@@ -83,7 +82,7 @@ class ASTBuilder(MiniCalcLangVisitor):
         return BoolNode(val)
 
     def visitUnaryExpr(self, ctx: MiniCalcLangParser.UnaryExprContext):
-        op = '-' if ctx.getText().startswith('-') else 'not'
+        op = ctx.getChild(0).getText()
         return UnaryOpNode(op, self.visit(ctx.expr()))
 
     def visitTransposeExpr(self, ctx: MiniCalcLangParser.TransposeExprContext):
@@ -109,3 +108,9 @@ class ASTBuilder(MiniCalcLangVisitor):
 
     def visitOrExpr(self, ctx: MiniCalcLangParser.OrExprContext):
         return BinOpNode(self.visit(ctx.expr(0)), 'or', self.visit(ctx.expr(1)))
+
+    def visitBreak_stmt(self, ctx: MiniCalcLangParser.Break_stmtContext):
+        return BreakNode()
+
+    def visitContinue_stmt(self, ctx: MiniCalcLangParser.Continue_stmtContext):
+        return ContinueNode()

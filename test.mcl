@@ -1,0 +1,69 @@
+# test.mcl - Główny test możliwości interpretera MiniCalcLang
+
+print("--- 1. Podstawowa arytmetyka i zmienne ---")
+x = 10
+y = -5 + 2 * (3 ^ 2)
+print("Wartosc y (powinno byc 13):")
+print(y)
+
+print("--- 2. Funkcje wbudowane i stałe ---")
+promien = 2.0
+pole_kola = pi * (promien ^ 2)
+print("Pole kola o promieniu 2:")
+print(pole_kola)
+
+print("--- 3. Operacje na macierzach ---")
+A = [
+    [1, 2],
+    [3, 4]
+]
+B = [
+    [2, 0],
+    [1, 2]
+]
+print("Macierz A:")
+print(A)
+print("Transpozycja macierzy B (B'):")
+print(B')
+print("Mnozenie macierzy A * B:")
+print(A * B)
+
+print("--- 4. Instrukcje warunkowe if/else ---")
+if pole_kola > 10 {
+    print("Pole jest wieksze od 10")
+} else {
+    print("Pole jest mniejsze lub rowne 10")
+}
+
+print("--- 5. Petla FOR z instrukcja CONTINUE ---")
+suma = 0
+for i = 1 to 5 step 1 {
+    if i == 3 {
+        continue  # Pomijamy dodawanie 3
+    }
+    suma = suma + i
+}
+print("Suma 1+2+4+5 (powinno byc 12):")
+print(suma)
+
+print("--- 6. Petla WHILE z instrukcja BREAK ---")
+licznik = 10
+while licznik > 0 {
+    if licznik == 7 {
+        break  # Przerywamy wczesniej
+    }
+    licznik = licznik - 1
+}
+print("Wartosc licznika po break (powinno byc 7):")
+print(licznik)
+
+print("--- 7. Funkcje i rekurencja ---")
+def silnia(n) {
+    if n <= 1 {
+        return 1
+    }
+    return n * silnia(n - 1)
+}
+
+print("Silnia z 5 (powinno byc 120):")
+print(silnia(5))

@@ -1,17 +1,16 @@
 import math
 import numpy as np
 from src.interpreter.environment import Environment
-from src.errors.exceptions import SemanticError, RuntimeError, ReturnException
+from src.errors.exceptions import SemanticError, RuntimeError, ReturnException, BreakException, ContinueException
 
 class InterpreterVisitor:
     def __init__(self, env=None):
         self.env = env or Environment()
-        # Predefiniowane wbudowane funkcje matematyczne
         self.builtins = {
             'sin': math.sin, 'cos': math.cos, 'tan': math.tan,
             'sqrt': math.sqrt, 'log': math.log, 'exp': math.exp,
-            'det': np.linalg.det,
-            'inv': np.linalg.inv
+            'det': np.linalg.det, 'inv': np.linalg.inv,
+            'pi': math.pi, 'e': math.e
         }
 
     def visit(self, node):
@@ -57,6 +56,8 @@ class InterpreterVisitor:
         val = self.visit(node.expr)
         if node.op == '-':
             return -val
+        elif node.op == '+':
+            return val
         elif node.op == 'not':
             return not val
         elif node.op == "'":
@@ -67,7 +68,6 @@ class InterpreterVisitor:
     def visit_BinOpNode(self, node):
         left = self.visit(node.left)
         
-        # Short-circuit logic dla 'and' i 'or'
         if node.op == 'and': return bool(left and self.visit(node.right))
         if node.op == 'or': return bool(left or self.visit(node.right))
         
@@ -80,7 +80,6 @@ class InterpreterVisitor:
                 return left + right
             if node.op == '-': return left - right
             if node.op == '*':
-                # Mnożenie macierzy w numpy
                 if isinstance(left, np.ndarray) and isinstance(right, np.ndarray):
                     return np.dot(left, right)
                 return left * right
@@ -125,7 +124,12 @@ class InterpreterVisitor:
 
     def visit_WhileNode(self, node):
         while self.visit(node.condition):
-            self.visit(node.body)
+            try:
+                self.visit(node.body)
+            except BreakException:
+                break
+            except ContinueException:
+                continue
 
     def visit_ForNode(self, node):
         start_val = self.visit(node.start_expr)
@@ -139,20 +143,23 @@ class InterpreterVisitor:
             if step_val > 0 and current_val > end_val: break
             if step_val < 0 and current_val < end_val: break
             
-            self.visit(node.body)
-            self.env.define_var(node.iterator_name, current_val + step_val)
+            try:
+                self.visit(node.body)
+            except BreakException:
+                break
+            except ContinueException:
+                pass
+                
+            self.env.define_var(node.iterator_name, self.env.get_var(node.iterator_name) + step_val)
 
     def visit_DefNode(self, node):
-        # Rejestruje funkcję w obecnym środowisku
         self.env.define_func(node.func_name, node)
 
     def visit_ReturnNode(self, node):
         val = self.visit(node.value) if node.value else None
-        # Zgłoszenie wyjątku jako mechanizm wyjścia z zagnieżdżonego stosu funkcji
         raise ReturnException(val)
 
     def visit_FuncCallNode(self, node):
-        # 1. Sprawdzenie funkcji wbudowanych
         if node.func_name in self.builtins:
             args = [self.visit(arg) for arg in node.args]
             try:
@@ -160,7 +167,6 @@ class InterpreterVisitor:
             except Exception as e:
                 raise RuntimeError(f"Error calling built-in function '{node.func_name}': {e}")
 
-        # 2. Sprawdzenie funkcji zdefiniowanych przez użytkownika
         func_def = self.env.get_func(node.func_name)
         if not func_def:
             raise SemanticError(f"Function '{node.func_name}' is not defined")
@@ -168,14 +174,11 @@ class InterpreterVisitor:
         if len(node.args) != len(func_def.params):
             raise SemanticError(f"Function '{node.func_name}' expects {len(func_def.params)} arguments, got {len(node.args)}")
 
-        # Tworzymy nowe, zamknięte środowisko z rodzicem ustawionym na środowisko, 
-        # w którym funkcja została WYWOŁANA (Dynamic Scoping, ułatwia akademicki model)
         func_env = Environment(parent=self.env)
         
         for param_name, arg_expr in zip(func_def.params, node.args):
             func_env.define_var(param_name, self.visit(arg_expr))
 
-        # Wymiana środowiska na czas wywołania funkcji
         previous_env = self.env
         self.env = func_env
         
@@ -187,3 +190,9 @@ class InterpreterVisitor:
         
         self.env = previous_env
         return None
+    
+    def visit_BreakNode(self, node):
+        raise BreakException()
+
+    def visit_ContinueNode(self, node):
+        raise ContinueException()

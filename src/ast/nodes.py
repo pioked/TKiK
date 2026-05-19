@@ -85,3 +85,11 @@ class ReturnNode(ASTNode):
 class FuncCallNode(ASTNode):
     func_name: str
     args: List[ASTNode]
+
+@dataclass
+class BreakNode(ASTNode):
+    pass
+
+@dataclass
+class ContinueNode(ASTNode):
+    pass

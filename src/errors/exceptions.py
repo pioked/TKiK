@@ -21,3 +21,9 @@ class ReturnException(Exception):
 class CustomErrorListener(ErrorListener):
     def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
         raise SyntaxError(msg, line, column)
+    
+class BreakException(Exception):
+    pass
+
+class ContinueException(Exception):
+    pass
