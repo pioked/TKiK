@@ -1,4 +1,4 @@
-# Sprawozdanie z projektu: Teoria Kompilacji i Kompilatorów (TKiK)
+# Interpreter MiniCalcLang
 
 ## 1. Temat projektu
 **MiniCalcLang** – interpreter języka programowania przeznaczonego do obliczeń naukowych, algebry liniowej (macierzy) oraz instrukcji sterujących przepływem.
