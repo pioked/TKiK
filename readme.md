@@ -15,7 +15,7 @@ Celem projektu jest stworzenie języka ułatwiającego przeprowadzanie obliczeń
 ### Rodzaj translatora
 **Interpreter** oparty o Drzewo Składni Abstrakcyjnej (AST). Program nie kompiluje kodu źródłowego do kodu maszynowego ani bajtkodu. Zamiast tego buduje wewnętrzną reprezentację (AST) i wykonuje ją węzeł po węźle z wykorzystaniem wzorca projektowego *Visitor* oraz własnego środowiska pamięci (*Scope/Environment*).
 
-### Planowany wynik działania programu
+### Wynik działania programu
 Program wczytuje kod źródłowy z pliku tekstowego (`.mcl`), analizuje go, rozwiązuje wyrażenia matematyczne i logiczne, a na podstawie instrukcji `print` wyświetla przetworzone wyniki na standardowym wyjściu (np. wynik mnożenia macierzy w formacie tekstowym). W przypadku błędów składniowych lub semantycznych zgłasza precyzyjne wyjątki wraz z numerem linii.
 
 ### Planowany język implementacji
