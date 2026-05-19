@@ -2,8 +2,7 @@ import sys
 import os
 from antlr4 import FileStream, CommonTokenStream
 
-# Dodanie ścieżki głównej do środowiska, żeby działały importy src.*
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 
 from src.parser.generated.MiniCalcLangLexer import MiniCalcLangLexer
 from src.parser.generated.MiniCalcLangParser import MiniCalcLangParser
@@ -23,7 +22,6 @@ def main():
         sys.exit(1)
 
     try:
-        # 1. Lexer
         input_stream = FileStream(input_file, encoding='utf-8')
         lexer = MiniCalcLangLexer(input_stream)
         lexer.removeErrorListeners()
@@ -31,18 +29,15 @@ def main():
         
         token_stream = CommonTokenStream(lexer)
 
-        # 2. Parser
         parser = MiniCalcLangParser(token_stream)
         parser.removeErrorListeners()
         parser.addErrorListener(CustomErrorListener())
         
         tree = parser.program()
 
-        # 3. Zbudowanie AST
         ast_builder = ASTBuilder()
         ast = ast_builder.visit(tree)
 
-        # 4. Uruchomienie Interpretera
         interpreter = InterpreterVisitor()
         interpreter.visit(ast)
 

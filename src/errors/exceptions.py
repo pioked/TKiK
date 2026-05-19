@@ -13,7 +13,6 @@ class SemanticError(MiniCalcError):
 class RuntimeError(MiniCalcError):
     pass
 
-# Używane wewnętrznie do obsługi instrukcji return wychodzącej z bloku kodu funkcji
 class ReturnException(Exception):
     def __init__(self, value):
         self.value = value
