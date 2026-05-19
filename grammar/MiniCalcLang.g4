@@ -37,9 +37,9 @@ expr:
     | ID                                                # VarExpr
     | NUMBER                                            # NumberExpr
     | STRING                                            # StringExpr
-    | TRUE | FALSE                                      # BoolExpr
+    | (TRUE | FALSE)                                      # BoolExpr
     | expr '\''                                         # TransposeExpr
-    | ('+' | '-' | 'not') expr                          # UnaryExpr (Dodano '+')
+    | ('+' | '-' | 'not') expr                          # UnaryExpr
     | expr '^' expr                                     # PowerExpr
     | expr ('*' | '/' | '%') expr                       # MulDivExpr
     | expr ('+' | '-') expr                             # AddSubExpr
