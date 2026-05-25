@@ -93,3 +93,43 @@ class BreakNode(ASTNode):
 @dataclass
 class ContinueNode(ASTNode):
     pass
+
+class VarDeclNode(ASTNode):
+    def __init__(self, name, expr=None, is_const=False):
+        self.name = name
+        self.expr = expr
+        self.is_const = is_const
+
+class CompoundAssignNode(ASTNode):
+    def __init__(self, name, operator, expr):
+        self.name = name
+        self.operator = operator
+        self.expr = expr
+
+class RepeatUntilNode(ASTNode):
+    def __init__(self, block, condition):
+        self.block = block
+        self.condition = condition
+
+class CaseNode(ASTNode):
+    def __init__(self, value, statement):
+        self.value = value
+        self.statement = statement
+
+class SwitchNode(ASTNode):
+    def __init__(self, expr, cases, default_block=None):
+        self.expr = expr
+        self.cases = cases
+        self.default_block = default_block
+
+class ListNode(ASTNode):
+    def __init__(self, elements):
+        self.elements = elements
+
+class IndexNode(ASTNode):
+    def __init__(self, target, indices):
+        self.target = target
+        self.indices = indices
+
+class NullNode(ASTNode):
+    pass

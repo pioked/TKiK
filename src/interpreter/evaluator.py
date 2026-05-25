@@ -7,12 +7,12 @@ class InterpreterVisitor:
     def __init__(self, env=None):
         self.env = env or Environment()
 
-        self.env.define_var('pi', math.pi)
-        self.env.define_var('e', math.e)
+        self.env.define_var('pi', np.pi)
+        self.env.define_var('e', np.e)
 
         self.builtins = {
-            'sin': math.sin, 'cos': math.cos, 'tan': math.tan,
-            'sqrt': math.sqrt, 'log': math.log, 'exp': math.exp,
+            'sin': np.sin, 'cos': np.cos, 'tan': np.tan,
+            'sqrt': np.sqrt, 'log': np.log, 'exp': np.exp,
             'det': np.linalg.det, 'inv': np.linalg.inv
         }
 
@@ -96,19 +96,19 @@ class InterpreterVisitor:
             if node.op == '>=': return left >= right
             if node.op == '<=': return left <= right
             if node.op == '==': 
-                if isinstance(left, np.ndarray) and isinstance(right, np.ndarray):
+                if isinstance(left, np.ndarray) or isinstance(right, np.ndarray):
                     return np.array_equal(left, right)
                 return left == right
             if node.op == '!=': 
-                if isinstance(left, np.ndarray) and isinstance(right, np.ndarray):
+                if isinstance(left, np.ndarray) or isinstance(right, np.ndarray):
                     return not np.array_equal(left, right)
-                return left != right
+                return left == right
         except Exception as e:
             raise RuntimeError(f"Operation failed: {str(e)}")
 
     def visit_AssignNode(self, node):
         val = self.visit(node.value)
-        self.env.define_var(node.var_name, val)
+        self.env.assign_var(node.var_name, val)
         return val
 
     def visit_PrintNode(self, node):
@@ -199,3 +199,68 @@ class InterpreterVisitor:
 
     def visit_ContinueNode(self, node):
         raise ContinueException()
+    
+    def visit_VarDeclNode(self, node):
+        val = self.visit(node.expr) if node.expr else None
+        self.env.define_var(node.name, val)
+        return val
+
+    def visit_CompoundAssignNode(self, node):
+        current_val = self.env.get_var(node.name)
+        val_to_apply = self.visit(node.expr)
+        
+        if node.operator == '+=': new_val = current_val + val_to_apply
+        elif node.operator == '-=': new_val = current_val - val_to_apply
+        elif node.operator == '*=': new_val = current_val * val_to_apply
+        elif node.operator == '/=': new_val = current_val / val_to_apply
+        else: new_val = current_val
+        
+        self.env.assign_var(node.name, new_val)
+        return new_val
+
+    def visit_RepeatUntilNode(self, node):
+        while True:
+            try:
+                self.visit(node.block)
+            except BreakException:
+                break
+            except ContinueException:
+                pass
+            
+            condition = self.visit(node.condition)
+            if condition:
+                break
+
+    def visit_SwitchNode(self, node):
+        switch_val = self.visit(node.expr)
+        matched = False
+        
+        for case in node.cases:
+            case_val = self.visit(case.value)
+            if switch_val == case_val:
+                self.visit(case.statement)
+                matched = True
+                break
+                
+        if not matched and node.default_block:
+            self.visit(node.default_block)
+
+    def visit_ListNode(self, node):
+        return [self.visit(element) for element in node.elements]
+
+    def visit_IndexNode(self, node):
+        target = self.visit(node.target)
+        resolved_indices = tuple(int(self.visit(idx)) for idx in node.indices)
+        try:
+            if isinstance(target, np.ndarray):
+                return target[resolved_indices]
+            else:
+                res = target
+                for i in resolved_indices:
+                    res = res[i]
+                return res
+        except (IndexError, TypeError, KeyError):
+            raise RuntimeError(f"Index out of bounds or invalid indexing targets with paths: {resolved_indices}")
+
+    def visit_NullNode(self, node):
+        return None
